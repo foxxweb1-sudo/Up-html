@@ -1,227 +1,181 @@
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>مستضيف التطبيقات الذكي 3D</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-    <!-- Firebase SDKs -->
-    <script src="https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js"></script>
-    <style>
-        @import url('https://fonts.googleapis.com/css2?family=Cairo:wght@400;700&display=swap');
-        
-        body, html {
-            margin: 0; padding: 0; overflow-x: hidden;
-            font-family: 'Cairo', sans-serif;
-            background-color: #020617; color: white;
-        }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>مستضيف التطبيقات الذكي 3D</title>
 
-        #canvas-container {
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: -1;
-        }
+<!-- Tailwind -->
+<script src="https://cdn.tailwindcss.com"></script>
 
-        .glass {
-            background: rgba(15, 23, 42, 0.6);
-            backdrop-filter: blur(12px);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-        }
+<!-- Three.js -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 
-        .code-editor {
-            font-family: 'Courier New', Courier, monospace;
-            background: #000 !important;
-            color: #10b981 !important;
-            direction: ltr;
-        }
+<!-- FontAwesome -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 
-        .share-link {
-            word-break: break-all;
-            background: rgba(59, 130, 246, 0.1);
-        }
-    </style>
+<!-- Font -->
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700&display=swap" rel="stylesheet">
+
+<style>
+body,html{
+    margin:0;
+    font-family:'Cairo',sans-serif;
+    background:#020617;
+    color:white;
+}
+#canvas-container{
+    position:fixed;
+    inset:0;
+    z-index:-1;
+}
+.glass{
+    background:rgba(15,23,42,.6);
+    backdrop-filter:blur(12px);
+    border:1px solid rgba(255,255,255,.1);
+}
+.code-editor{
+    background:black;
+    color:#10b981;
+    font-family:monospace;
+    direction:ltr;
+}
+</style>
 </head>
+
 <body>
 
-    <div id="canvas-container"></div>
+<div id="canvas-container"></div>
 
-    <div class="relative z-10">
-        <!-- Header -->
-        <header class="py-10 px-6 text-center">
-            <h1 class="text-4xl md:text-6xl font-bold mb-4 bg-clip-text text-transparent bg-gradient-to-r from-cyan-400 to-blue-500">
-                انشر تطبيقك في ثوانٍ
-            </h1>
-            <p class="text-gray-400">اكتب كود HTML، اضغط نشر، واحصل على رابطك فوراً!</p>
-        </header>
+<div class="relative z-10 min-h-screen">
 
-        <main class="container mx-auto px-4 grid grid-cols-1 lg:grid-cols-2 gap-8">
-            
-            <!-- Editor Section -->
-            <section class="glass p-6 rounded-3xl shadow-2xl">
-                <div class="flex items-center justify-between mb-4">
-                    <h2 class="text-xl font-bold flex items-center gap-2">
-                        <i class="fas fa-code text-cyan-400"></i> محرر الأكواد
-                    </h2>
-                    <span class="text-xs text-gray-400">HTML / CSS / JS</span>
-                </div>
-                
-                <input type="text" id="appTitle" placeholder="عنوان التطبيق..." class="w-full p-3 mb-3 rounded-lg glass outline-none border-cyan-500/30 focus:border-cyan-500">
-                
-                <textarea id="htmlCode" spellcheck="false" class="code-editor w-full h-80 p-4 rounded-xl outline-none border border-white/10 resize-none mb-4" placeholder="<html>
+<header class="text-center py-10">
+<h1 class="text-4xl md:text-6xl font-bold bg-gradient-to-r from-cyan-400 to-blue-500 bg-clip-text text-transparent">
+انشر تطبيقك في ثواني
+</h1>
+<p class="text-gray-400 mt-3">ارفع index.html أو اكتب كودك وخد الرابط فورًا</p>
+</header>
+
+<main class="container mx-auto px-4 max-w-4xl">
+<section class="glass p-6 rounded-3xl shadow-2xl">
+
+<h2 class="text-xl font-bold mb-4 flex items-center gap-2">
+<i class="fa-solid fa-code text-cyan-400"></i>
+محرر الأكواد
+</h2>
+
+<input id="appTitle" placeholder="عنوان التطبيق" 
+class="w-full mb-3 p-3 rounded-lg bg-black/40 outline-none">
+
+<input type="file" id="fileInput" accept=".html"
+class="w-full mb-3 text-sm text-gray-300">
+
+<textarea id="htmlCode" spellcheck="false"
+class="code-editor w-full h-72 p-4 rounded-xl outline-none resize-none mb-4"
+placeholder="<html>
 <body>
-  <h1>Hello World</h1>
+<h1>Hello World</h1>
 </body>
 </html>"></textarea>
 
-                <button id="publishBtn" class="w-full bg-gradient-to-r from-cyan-500 to-blue-600 py-4 rounded-xl font-bold text-lg hover:shadow-[0_0_20px_rgba(6,182,212,0.5)] transition-all">
-                    نشر وتوليد الرابط <i class="fas fa-paper-plane mr-2"></i>
-                </button>
+<button id="publishBtn"
+class="w-full bg-gradient-to-r from-cyan-500 to-blue-600 py-4 rounded-xl font-bold text-lg hover:opacity-90 transition">
+نشر وتوليد الرابط <i class="fa-solid fa-paper-plane"></i>
+</button>
 
-                <!-- Generated Link UI -->
-                <div id="resultArea" class="hidden mt-6 p-4 rounded-xl bg-green-500/10 border border-green-500/20">
-                    <p class="text-sm text-green-400 mb-2">تم النشر بنجاح! رابط تطبيقك:</p>
-                    <div class="flex gap-2">
-                        <input type="text" id="finalLink" readonly class="flex-1 p-2 text-xs rounded bg-black/50 border-none outline-none">
-                        <button onclick="copyLink()" class="bg-green-600 px-4 py-2 rounded text-xs font-bold">نسخ</button>
-                    </div>
-                </div>
-            </section>
+<div id="resultArea" class="hidden mt-6 p-4 rounded-xl bg-green-500/10 border border-green-500/20">
+<p class="text-green-400 mb-2">تم إنشاء الرابط بنجاح:</p>
+<div class="flex gap-2">
+<input id="finalLink" readonly
+class="flex-1 p-2 text-xs bg-black/60 rounded outline-none">
+<button onclick="copyLink()"
+class="bg-green-600 px-4 rounded font-bold text-xs">نسخ</button>
+</div>
+</div>
 
-            <!-- Live Feed Section -->
-            <section class="space-y-6">
-                <h2 class="text-2xl font-bold px-2 flex items-center gap-3">
-                    <i class="fas fa-globe-americas text-blue-400"></i> تطبيقات المستخدمين الأخيرة
-                </h2>
-                <div id="projectsContainer" class="grid grid-cols-1 gap-4 overflow-y-auto max-h-[600px] pr-2">
-                    <!-- Projects list will be populated here -->
-                </div>
-            </section>
-        </main>
+</section>
+</main>
 
-        <footer class="py-16 text-center text-gray-500">
-            <p>جميع التطبيقات يتم استضافتها بشكل فوري وآمن.</p>
-        </footer>
-    </div>
+<footer class="text-center py-10 text-gray-500">
+جميع التطبيقات تعمل بدون سيرفر
+</footer>
 
-    <script type="module">
-        // --- THREE.JS BACKGROUND ---
-        let scene, camera, renderer, stars;
-        function init3D() {
-            scene = new THREE.Scene();
-            camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 1, 1000);
-            camera.position.z = 1; camera.rotation.x = Math.PI/2;
-            renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
-            renderer.setSize(window.innerWidth, window.innerHeight);
-            document.getElementById('canvas-container').appendChild(renderer.domElement);
-            const geo = new THREE.BufferGeometry();
-            const pos = [];
-            for(let i=0; i<8000; i++) { pos.push(Math.random()*600-300, Math.random()*600-300, Math.random()*600-300); }
-            geo.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3));
-            stars = new THREE.Points(geo, new THREE.PointsMaterial({color: 0xffffff, size: 0.5}));
-            scene.add(stars);
-            animate();
-        }
-        function animate() {
-            stars.rotation.y += 0.001;
-            renderer.render(scene, camera);
-            requestAnimationFrame(animate);
-        }
-        window.addEventListener('resize', () => {
-            camera.aspect = window.innerWidth / window.innerHeight;
-            camera.updateProjectionMatrix();
-            renderer.setSize(window.innerWidth, window.innerHeight);
-        });
-        init3D();
+</div>
 
-        // --- FIREBASE & LOGIC ---
-        const firebaseConfig = JSON.parse(__firebase_config);
-        const app = firebase.initializeApp(firebaseConfig);
-        const db = firebase.firestore(app);
-        const auth = firebase.auth(app);
-        const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-id';
+<!-- THREE BACKGROUND -->
+<script>
+let scene,camera,renderer,stars;
+scene=new THREE.Scene();
+camera=new THREE.PerspectiveCamera(60,innerWidth/innerHeight,1,1000);
+camera.position.z=1;
+camera.rotation.x=Math.PI/2;
 
-        // Auth
-        async function startAuth() {
-            if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
-                await firebase.auth().signInWithCustomToken(__initial_auth_token);
-            } else {
-                await firebase.auth().signInAnonymously();
-            }
-        }
-        startAuth();
+renderer=new THREE.WebGLRenderer({alpha:true});
+renderer.setSize(innerWidth,innerHeight);
+document.getElementById("canvas-container").appendChild(renderer.domElement);
 
-        const projectsCol = firebase.firestore().collection('artifacts').doc(appId).collection('public').doc('data').collection('user_apps');
+const geo=new THREE.BufferGeometry();
+const pos=[];
+for(let i=0;i<8000;i++){
+pos.push(Math.random()*600-300,Math.random()*600-300,Math.random()*600-300);
+}
+geo.setAttribute("position",new THREE.Float32BufferAttribute(pos,3));
+stars=new THREE.Points(geo,new THREE.PointsMaterial({color:0xffffff,size:.6}));
+scene.add(stars);
 
-        // Logic to generate unique link (Data URI approach for immediate preview)
-        function generateLiveLink(html) {
-            // Encode the HTML to Base64 so it can be sent in a URL
-            const blob = new Blob([html], { type: 'text/html' });
-            // In a real server we'd save the file. Here we create a "Viewer" link.
-            // For this app, we will use a base64 string that our app can decode or open directly.
-            const encoded = btoa(unescape(encodeURIComponent(html)));
-            return `data:text/html;base64,${encoded}`;
-        }
+function animate(){
+stars.rotation.y+=0.001;
+renderer.render(scene,camera);
+requestAnimationFrame(animate);
+}
+animate();
 
-        document.getElementById('publishBtn').addEventListener('click', async () => {
-            const title = document.getElementById('appTitle').value || "تطبيق بدون عنوان";
-            const code = document.getElementById('htmlCode').value;
+addEventListener("resize",()=>{
+camera.aspect=innerWidth/innerHeight;
+camera.updateProjectionMatrix();
+renderer.setSize(innerWidth,innerHeight);
+});
+</script>
 
-            if(!code.trim()) return alert("الرجاء كتابة كود أولاً!");
+<!-- LOGIC -->
+<script>
+function generateLiveLink(html){
+const encoded=btoa(unescape(encodeURIComponent(html)));
+return `data:text/html;base64,${encoded}`;
+}
 
-            const liveUrl = generateLiveLink(code);
+document.getElementById("publishBtn").onclick=()=>{
+const code=document.getElementById("htmlCode").value;
+if(!code.trim()){
+alert("اكتب كود أو ارفع ملف HTML");
+return;
+}
+const link=generateLiveLink(code);
+document.getElementById("resultArea").classList.remove("hidden");
+document.getElementById("finalLink").value=link;
+};
 
-            try {
-                await projectsCol.add({
-                    title: title,
-                    url: liveUrl,
-                    timestamp: firebase.firestore.FieldValue.serverTimestamp(),
-                    creator: auth.currentUser?.uid || 'anonymous'
-                });
+document.getElementById("fileInput").addEventListener("change",e=>{
+const file=e.target.files[0];
+if(!file)return;
+if(!file.name.endsWith(".html")){
+alert("ارفع ملف HTML فقط");
+return;
+}
+const reader=new FileReader();
+reader.onload=ev=>{
+document.getElementById("htmlCode").value=ev.target.result;
+};
+reader.readAsText(file);
+});
 
-                document.getElementById('resultArea').classList.remove('hidden');
-                document.getElementById('finalLink').value = liveUrl;
-                document.getElementById('htmlCode').value = "";
-                document.getElementById('appTitle').value = "";
-            } catch (e) {
-                console.error(e);
-            }
-        });
+function copyLink(){
+const input=document.getElementById("finalLink");
+input.select();
+document.execCommand("copy");
+alert("تم نسخ الرابط");
+}
+</script>
 
-        // Load Projects
-        projectsCol.onSnapshot((snapshot) => {
-            const container = document.getElementById('projectsContainer');
-            container.innerHTML = "";
-            const docs = [];
-            snapshot.forEach(doc => docs.push(doc.data()));
-            
-            // Sort in memory (Rule 2: avoid orderBy in Firestore without index)
-            docs.sort((a, b) => (b.timestamp?.seconds || 0) - (a.timestamp?.seconds || 0));
-
-            docs.forEach(p => {
-                const card = document.createElement('div');
-                card.className = "glass p-4 rounded-2xl border-l-4 border-cyan-500 flex items-center justify-between";
-                card.innerHTML = `
-                    <div>
-                        <h4 class="font-bold text-lg">${p.title}</h4>
-                        <p class="text-xs text-gray-400">نُشر بواسطة مبرمج مبدع</p>
-                    </div>
-                    <a href="${p.url}" target="_blank" class="bg-cyan-600/20 text-cyan-400 p-3 rounded-full hover:bg-cyan-600 hover:text-white transition-all">
-                        <i class="fas fa-external-link-alt"></i>
-                    </a>
-                `;
-                container.appendChild(card);
-            });
-        }, (err) => console.error(err));
-
-        window.copyLink = function() {
-            const input = document.getElementById('finalLink');
-            input.select();
-            document.execCommand('copy');
-            alert("تم نسخ رابط التطبيق!");
-        }
-    </script>
 </body>
 </html>
-
