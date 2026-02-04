@@ -3,7 +3,10 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>مستضيف التطبيقات الذكي 3D</title>
+
+<title>HTML2App | حوّل HTML لتطبيق في ثواني</title>
+<meta name="description" content="حوّل أي ملف HTML إلى تطبيق ورابط مباشر و APK بسهولة.">
+<meta name="theme-color" content="#06b6d4">
 
 <!-- Tailwind -->
 <script src="https://cdn.tailwindcss.com"></script>
@@ -11,169 +14,189 @@
 <!-- Three.js -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 
-<!-- FontAwesome -->
+<!-- QR -->
+<script src="https://cdn.jsdelivr.net/npm/qrcodejs/qrcode.min.js"></script>
+
+<!-- Icons -->
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 
 <!-- Font -->
 <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700&display=swap" rel="stylesheet">
 
 <style>
-body,html{
-    margin:0;
-    font-family:'Cairo',sans-serif;
-    background:#020617;
-    color:white;
-}
-#canvas-container{
-    position:fixed;
-    inset:0;
-    z-index:-1;
-}
-.glass{
-    background:rgba(15,23,42,.6);
-    backdrop-filter:blur(12px);
-    border:1px solid rgba(255,255,255,.1);
-}
-.code-editor{
-    background:black;
-    color:#10b981;
-    font-family:monospace;
-    direction:ltr;
-}
+body{font-family:'Cairo',sans-serif;background:#020617;color:#fff}
+#bg{position:fixed;inset:0;z-index:-1}
+.glass{background:rgba(15,23,42,.6);backdrop-filter:blur(12px);border:1px solid rgba(255,255,255,.1)}
+textarea{background:#000;color:#10b981;font-family:monospace;direction:ltr}
 </style>
+
+<!-- Manifest (inline) -->
+<link rel="manifest" href='data:application/json,{
+"name":"HTML2App",
+"short_name":"HTML2App",
+"start_url":".",
+"display":"standalone",
+"background_color":"#020617",
+"theme_color":"#06b6d4",
+"icons":[
+{"src":"https://cdn-icons-png.flaticon.com/512/919/919827.png","sizes":"512x512","type":"image/png"}
+]
+}'>
 </head>
 
 <body>
 
-<div id="canvas-container"></div>
+<div id="bg"></div>
 
-<div class="relative z-10 min-h-screen">
+<div class="container mx-auto max-w-4xl px-4 py-10 relative z-10">
 
-<header class="text-center py-10">
-<h1 class="text-4xl md:text-6xl font-bold bg-gradient-to-r from-cyan-400 to-blue-500 bg-clip-text text-transparent">
-انشر تطبيقك في ثواني
+<h1 class="text-4xl md:text-6xl font-bold text-center bg-gradient-to-r from-cyan-400 to-blue-500 bg-clip-text text-transparent">
+HTML2App
 </h1>
-<p class="text-gray-400 mt-3">ارفع index.html أو اكتب كودك وخد الرابط فورًا</p>
-</header>
+<p class="text-center text-gray-400 mt-3">
+حوّل أي HTML لتطبيق + رابط + APK
+</p>
 
-<main class="container mx-auto px-4 max-w-4xl">
-<section class="glass p-6 rounded-3xl shadow-2xl">
+<div class="glass p-6 rounded-3xl mt-8">
 
-<h2 class="text-xl font-bold mb-4 flex items-center gap-2">
-<i class="fa-solid fa-code text-cyan-400"></i>
-محرر الأكواد
-</h2>
+<input id="title" placeholder="اسم التطبيق"
+class="w-full p-3 mb-3 rounded bg-black/50">
 
-<input id="appTitle" placeholder="عنوان التطبيق" 
-class="w-full mb-3 p-3 rounded-lg bg-black/40 outline-none">
+<input type="file" id="file" accept=".html" class="mb-3">
 
-<input type="file" id="fileInput" accept=".html"
-class="w-full mb-3 text-sm text-gray-300">
+<textarea id="code" rows="10" class="w-full p-4 rounded mb-4"
+placeholder="<h1>Hello App</h1>"></textarea>
 
-<textarea id="htmlCode" spellcheck="false"
-class="code-editor w-full h-72 p-4 rounded-xl outline-none resize-none mb-4"
-placeholder="<html>
-<body>
-<h1>Hello World</h1>
-</body>
-</html>"></textarea>
-
-<button id="publishBtn"
-class="w-full bg-gradient-to-r from-cyan-500 to-blue-600 py-4 rounded-xl font-bold text-lg hover:opacity-90 transition">
-نشر وتوليد الرابط <i class="fa-solid fa-paper-plane"></i>
+<button onclick="publish()"
+class="w-full bg-cyan-600 py-3 rounded font-bold">
+نشر التطبيق
 </button>
 
-<div id="resultArea" class="hidden mt-6 p-4 rounded-xl bg-green-500/10 border border-green-500/20">
-<p class="text-green-400 mb-2">تم إنشاء الرابط بنجاح:</p>
-<div class="flex gap-2">
-<input id="finalLink" readonly
-class="flex-1 p-2 text-xs bg-black/60 rounded outline-none">
-<button onclick="copyLink()"
-class="bg-green-600 px-4 rounded font-bold text-xs">نسخ</button>
-</div>
-</div>
+<div id="result" class="hidden mt-6">
+<input id="link" readonly
+class="w-full p-2 bg-black rounded text-xs mb-3">
 
-</section>
-</main>
-
-<footer class="text-center py-10 text-gray-500">
-جميع التطبيقات تعمل بدون سيرفر
-</footer>
-
+<div class="flex gap-2 mb-3">
+<button onclick="copyLink()" class="bg-green-600 px-4 py-2 rounded">
+<i class="fa fa-copy"></i> نسخ
+</button>
+<button onclick="shareLink()" class="bg-blue-600 px-4 py-2 rounded">
+<i class="fa fa-share"></i> مشاركة
+</button>
 </div>
 
-<!-- THREE BACKGROUND -->
+<div id="qr" class="flex justify-center"></div>
+
+<iframe id="preview"
+class="w-full h-64 mt-4 rounded bg-black"></iframe>
+</div>
+
+</div>
+
+<h2 class="text-xl mt-10 mb-4">📂 تطبيقاتك المحفوظة</h2>
+<div id="apps" class="space-y-3"></div>
+
+</div>
+
 <script>
-let scene,camera,renderer,stars;
-scene=new THREE.Scene();
-camera=new THREE.PerspectiveCamera(60,innerWidth/innerHeight,1,1000);
-camera.position.z=1;
-camera.rotation.x=Math.PI/2;
+/* ====== 3D Background ====== */
+let s=new THREE.Scene();
+let c=new THREE.PerspectiveCamera(60,innerWidth/innerHeight,1,1000);
+c.position.z=1;c.rotation.x=Math.PI/2;
+let r=new THREE.WebGLRenderer({alpha:true});
+r.setSize(innerWidth,innerHeight);
+bg.appendChild(r.domElement);
 
-renderer=new THREE.WebGLRenderer({alpha:true});
-renderer.setSize(innerWidth,innerHeight);
-document.getElementById("canvas-container").appendChild(renderer.domElement);
+let g=new THREE.BufferGeometry(),p=[];
+for(let i=0;i<6000;i++)
+p.push(Math.random()*600-300,Math.random()*600-300,Math.random()*600-300);
+g.setAttribute("position",new THREE.Float32BufferAttribute(p,3));
+let stars=new THREE.Points(g,new THREE.PointsMaterial({color:0xffffff,size:.6}));
+s.add(stars);
 
-const geo=new THREE.BufferGeometry();
-const pos=[];
-for(let i=0;i<8000;i++){
-pos.push(Math.random()*600-300,Math.random()*600-300,Math.random()*600-300);
-}
-geo.setAttribute("position",new THREE.Float32BufferAttribute(pos,3));
-stars=new THREE.Points(geo,new THREE.PointsMaterial({color:0xffffff,size:.6}));
-scene.add(stars);
+(function anim(){
+stars.rotation.y+=.001;
+r.render(s,c);
+requestAnimationFrame(anim);
+})();
 
-function animate(){
-stars.rotation.y+=0.001;
-renderer.render(scene,camera);
-requestAnimationFrame(animate);
-}
-animate();
-
-addEventListener("resize",()=>{
-camera.aspect=innerWidth/innerHeight;
-camera.updateProjectionMatrix();
-renderer.setSize(innerWidth,innerHeight);
-});
-</script>
-
-<!-- LOGIC -->
-<script>
-function generateLiveLink(html){
-const encoded=btoa(unescape(encodeURIComponent(html)));
-return `data:text/html;base64,${encoded}`;
-}
-
-document.getElementById("publishBtn").onclick=()=>{
-const code=document.getElementById("htmlCode").value;
-if(!code.trim()){
-alert("اكتب كود أو ارفع ملف HTML");
-return;
-}
-const link=generateLiveLink(code);
-document.getElementById("resultArea").classList.remove("hidden");
-document.getElementById("finalLink").value=link;
+/* ====== File Upload ====== */
+file.onchange=e=>{
+let f=e.target.files[0];
+if(!f)return;
+let rd=new FileReader();
+rd.onload=ev=>code.value=ev.target.result;
+rd.readAsText(f);
 };
 
-document.getElementById("fileInput").addEventListener("change",e=>{
-const file=e.target.files[0];
-if(!file)return;
-if(!file.name.endsWith(".html")){
-alert("ارفع ملف HTML فقط");
-return;
+/* ====== Core Logic ====== */
+function gen(html){
+return "data:text/html;base64,"+btoa(unescape(encodeURIComponent(html)));
 }
-const reader=new FileReader();
-reader.onload=ev=>{
-document.getElementById("htmlCode").value=ev.target.result;
-};
-reader.readAsText(file);
-});
 
+function publish(){
+if(!code.value.trim())return alert("اكتب كود أو ارفع ملف HTML");
+let l=gen(code.value);
+link.value=l;
+preview.src=l;
+result.classList.remove("hidden");
+qr.innerHTML="";
+new QRCode(qr,{text:l,width:150,height:150});
+saveApp();
+loadApps();
+}
+
+/* ====== Save Apps ====== */
+function saveApp(){
+let arr=JSON.parse(localStorage.apps||"[]");
+arr.unshift({
+title:title.value||"بدون اسم",
+link:link.value,
+date:new Date().toLocaleString()
+});
+localStorage.apps=JSON.stringify(arr);
+}
+
+function loadApps(){
+apps.innerHTML="";
+(JSON.parse(localStorage.apps||"[]")).forEach(a=>{
+apps.innerHTML+=`
+<div class="glass p-3 rounded flex justify-between items-center">
+<div>
+<p class="font-bold">${a.title}</p>
+<p class="text-xs text-gray-400">${a.date}</p>
+</div>
+<button onclick="window.open('${a.link}')"
+class="bg-cyan-600 px-3 py-1 rounded text-xs">فتح</button>
+</div>`;
+});
+}
+loadApps();
+
+/* ====== Actions ====== */
 function copyLink(){
-const input=document.getElementById("finalLink");
-input.select();
+link.select();
 document.execCommand("copy");
 alert("تم نسخ الرابط");
+}
+
+function shareLink(){
+if(navigator.share)
+navigator.share({title:"HTML2App",url:link.value});
+}
+
+/* ====== Service Worker (inline) ====== */
+if("serviceWorker" in navigator){
+const swCode=`
+self.addEventListener('install',e=>{
+e.waitUntil(caches.open('html2app').then(c=>c.addAll(['./'])))
+});
+self.addEventListener('fetch',e=>{
+e.respondWith(caches.match(e.request).then(r=>r||fetch(e.request)))
+});
+`;
+const blob=new Blob([swCode],{type:"text/javascript"});
+navigator.serviceWorker.register(URL.createObjectURL(blob));
 }
 </script>
 
